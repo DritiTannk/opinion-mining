@@ -15,6 +15,9 @@ from sklearn.metrics import accuracy_score
 
 
 def clean(text):
+    """
+    This method cleans the text by removing links and unwanted symbols.
+    """
     text = re.sub('[.]*', '', text)
     text = re.sub("http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+#]|[!*\(\),]|"\
                   "(?:%[0-9a-fA-F][0-9a-fA-F]))+", '', text)
@@ -37,10 +40,12 @@ def check_emotions(text):
                 try:
                     emoji_sent = get_emoji_sentiment_rank(e[0])
                     overall_sentiment += emoji_sent.get('sentiment_score')
+                    text = re.sub(e[0], '', text)
                 except KeyError:
+                    text = re.sub(e[0], '', text)
                     overall_sentiment += 0
 
-    return overall_sentiment
+    return {'text': text, 'overall_sentiment': overall_sentiment}
 
 
 def token_stop_pos(text):
@@ -57,17 +62,17 @@ def token_stop_pos(text):
     return tag_list
 
 
-def sentiwordnetanalysis(pos_data):
+def sentiment_analysis(pos_data):
     """
     This method returns the overall sentiment score of the text.
     """
-    wordnet_lemmatizer = WordNetLemmatizer()
+    lemmatizer = WordNetLemmatizer()
     sentiment = 0
     tokens_count = 0
     for word, pos in pos_data:
         if not pos:
             continue
-        lemma = wordnet_lemmatizer.lemmatize(word, pos=pos)
+        lemma = lemmatizer.lemmatize(word, pos=pos)
         if not lemma:
             continue
         synsets = wordnet.synsets(lemma, pos=pos)
@@ -81,8 +86,8 @@ def sentiwordnetanalysis(pos_data):
     return sentiment
 
 
-def generate_csv():
-    df = pd.read_csv('Assets/output/emotions_analysis.csv')
+def check_accuracy():
+    df = pd.read_csv('Assets/output/airlines_analysis.csv')
     df1 = pd.read_csv('Assets/input/airline_ds_test.csv')
 
     new_df = df1.merge(df, on='text', left_index=True)
@@ -90,7 +95,7 @@ def generate_csv():
     column_names = ['text', 'airline_sentiment', 'sentiwordnet_result']
 
     new_df.reindex(columns=column_names)
-    new_df.to_csv('Assets/output/air_merged.csv')
+    new_df.to_csv('Assets/output/air_merged.csv', index=False)
 
     accuracy = accuracy_score(new_df['airline_sentiment'], new_df['sentiwordnet_result'])
     print('\n\n Airlines Dataset Accuracy ==> ', accuracy)
@@ -110,10 +115,12 @@ if __name__ == '__main__':
         row_index = ds.index[ds.text == row]
         len_row_index = len(row_index)
 
-        clean_row = clean(row)
-        emojis_sentiment = check_emotions(clean_row)
-        row_post = token_stop_pos(clean_row)
-        sent = sentiwordnetanalysis(row_post)
+        clean_row = clean(row)  # Clean text
+        emoji_result = check_emotions(clean_row)
+        emojis_sentiment = emoji_result.get('overall_sentiment')  # Get emojis sentiment
+        emoji_clean_text = emoji_result.get('text')  # Get emoji free text
+        row_post = token_stop_pos(emoji_clean_text)  # Get postag for the text
+        sent = sentiment_analysis(row_post)  # Get sentiment for the text
 
         overall_tweet_sent = sent + emojis_sentiment
 
@@ -132,11 +139,7 @@ if __name__ == '__main__':
         else:
             ds.loc[ds.index[row_index], 'sentiwordnet_result'] = tweet_sent
 
-    ds.to_csv('Assets/output/emotions_analysis_5.csv', index=False)
+    ds.to_csv('Assets/output/airlines_analysis.csv', index=False)
 
-    generate_csv()
-
-
-
-
+    check_accuracy()
 

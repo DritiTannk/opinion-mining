@@ -30,7 +30,7 @@ def token_stop_pos(text):
     return tag_list
 
 
-def sentiwordnetanalysis(pos_data):
+def sentiment_analysis(pos_data):
     lemmatizer = WordNetLemmatizer()
     sentiment = 0
     tokens_count = 0
@@ -62,7 +62,7 @@ def check_accuracy():
     """
     This method checks the accuracy of the sentiment score.
     """
-    df = pd.read_csv('Assets/output/imd_analysis4.csv')
+    df = pd.read_csv('Assets/output/imd_snw_analysis.csv')
     df1 = pd.read_csv('Assets/input/imdb_ds_test.csv')
 
     new_df = df1.merge(df, on='text', left_index=True)
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         len_row_index = len(row_index)
         row_clean = clean(row)
         row_post = token_stop_pos(row_clean)
-        sent = sentiwordnetanalysis(row_post)
+        sent = sentiment_analysis(row_post)
 
         if len_row_index > 0:
             for idx in row_index:
