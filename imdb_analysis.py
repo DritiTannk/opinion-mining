@@ -70,7 +70,7 @@ def check_accuracy():
     column_names = ['text', 'label', 'sentiwordnet_result']
 
     new_df.reindex(columns=column_names)
-    new_df.to_csv('Assets/output/imdb_merged_ds.csv', index=True, index_label='SR_NO')
+    new_df.to_csv('Assets/output/imdb_sent_analysis.csv', index=True, index_label='SR_NO')
 
     accuracy = accuracy_score(new_df['label'], new_df['sentiwordnet_result'])
     print('\n\n IMDB Dataset Accuracy ==> ', accuracy)

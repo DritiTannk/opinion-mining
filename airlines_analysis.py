@@ -95,7 +95,7 @@ def check_accuracy():
     column_names = ['text', 'airline_sentiment', 'sentiwordnet_result']
 
     new_df.reindex(columns=column_names)
-    new_df.to_csv('Assets/output/air_merged.csv', index=False)
+    new_df.to_csv('Assets/output/airlines_sentiment_analysis.csv', index=False)
 
     accuracy = accuracy_score(new_df['airline_sentiment'], new_df['sentiwordnet_result'])
     print('\n\n Airlines Dataset Accuracy ==> ', accuracy)
